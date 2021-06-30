@@ -1,2 +1,2 @@
 # Unity_Indirect-Rendering-With-Compute-Shaders
-GPUUnity
+GPU-Driven demo in Unity
