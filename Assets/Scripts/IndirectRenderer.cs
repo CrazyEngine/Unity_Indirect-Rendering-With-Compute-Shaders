@@ -58,6 +58,7 @@ public class IndirectRenderer : MonoBehaviour
     
     [Header("Settings")]
     public bool runCompute = true;
+    public bool AsyncCompute = true;
     public bool drawInstances = true;
     public bool drawInstanceShadows = true;
     public bool enableFrustumCulling = true;
@@ -535,7 +536,10 @@ public class IndirectRenderer : MonoBehaviour
         Profiler.BeginSample("LOD Sorting");
         {
             m_lastCamPosition = m_camPosition;
-            Graphics.ExecuteCommandBufferAsync(m_sortingCommandBuffer, ComputeQueueType.Background);
+            if (AsyncCompute)
+                Graphics.ExecuteCommandBufferAsync(m_sortingCommandBuffer, ComputeQueueType.Background);
+            else
+                Graphics.ExecuteCommandBuffer(m_sortingCommandBuffer);
         }
         Profiler.EndSample();
         
@@ -562,6 +566,9 @@ public class IndirectRenderer : MonoBehaviour
         uint MATRIX_HEIGHT = (uint)NUM_ELEMENTS / BITONIC_BLOCK_SIZE;
 
         m_sortingCommandBuffer = new CommandBuffer {name = "AsyncGPUSorting"};
+        //如果不调用下面这一行，是不能调用Graphics.ExecuteCommandBufferAsync()这个接口的
+        m_sortingCommandBuffer.SetExecutionFlags(CommandBufferExecutionFlags.AsyncCompute);
+        bool boTemp = AsyncCompute;
 
         // Sort the data
         // First sort the rows for the levels <= to the block size
